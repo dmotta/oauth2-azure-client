@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.1.4.RELEASE</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>com.github.dmotta.oauth</groupId>
+    <artifactId>oauth2-azure-client</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <properties>
+   	<docker.image.prefix>dmottaregistry.azurecr.io</docker.image.prefix>
+   	<jib-maven-plugin.version>1.0.2</jib-maven-plugin.version>
+	<java.version>1.8</java.version>
+        <spring.boot.version>2.1.4.RELEASE</spring.boot.version>
+        <azure.version>2.1.6</azure.version>
+	<RESOURCEGROUP_NAME>rsgroup-dmotta</RESOURCEGROUP_NAME>
+	<REGION>eastus</REGION>
+	<WEBAPP_NAME>oauth2-azure-dmotta.azurewebsites.net</WEBAPP_NAME>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-active-directory-spring-boot-starter</artifactId>
+            <version>2.1.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-client</artifactId>
+            <version>5.1.5.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-jose</artifactId>
+            <version>5.1.5.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.thymeleaf.extras</groupId>
+            <artifactId>thymeleaf-extras-springsecurity5</artifactId>
+            <version>3.0.4.RELEASE</version>
+        </dependency>
+
+    </dependencies>
+
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-spring-boot-bom</artifactId>
+                <version>${azure.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+	    <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <!-- tag::plugin[] -->
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>dockerfile-maven-plugin</artifactId>
+                <version>1.4.9</version>
+                <configuration>
+                    <repository>${docker.image.prefix}/${project.artifactId}</repository>
+                </configuration>
+            </plugin>
+            <!-- end::plugin[] -->
+
+            <!-- tag::unpack[] -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>${project.artifactId}</artifactId>
+                                    <version>${project.version}</version>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+<plugin>
+  <artifactId>jib-maven-plugin</artifactId>
+  <groupId>com.google.cloud.tools</groupId>
+  <version>${jib-maven-plugin.version}</version>
+  <configuration>
+     <from>				
+         <image>openjdk:8-jre-alpine</image>
+     </from>
+     <to>				
+         <image>${docker.image.prefix}/${project.artifactId}</image>
+     </to>
+  </configuration>
+</plugin>
+
+<plugin>
+ <groupId>com.microsoft.azure</groupId>
+ <artifactId>azure-webapp-maven-plugin</artifactId>
+ <version>1.4.0</version>
+ <configuration>
+   <deploymentType>jar</deploymentType>
+
+   <!-- configure app to run on port 80, required by App Service -->
+   <appSettings>
+     <property> 
+       <name>JAVA_OPTS</name> 
+       <value>-Dserver.port=80</value> 
+     </property> 
+   </appSettings>
+
+   <!-- Web App information -->
+   <resourceGroup>${RESOURCEGROUP_NAME}</resourceGroup>
+   <appName>${WEBAPP_NAME}</appName>
+   <region>${REGION}</region>  
+
+   <!-- Java Runtime Stack for Web App on Linux-->
+   <linuxRuntime>jre8</linuxRuntime>
+ </configuration>
+</plugin>
+
+        </plugins>
+    </build>
+</project>
